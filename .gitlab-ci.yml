@@ -51,7 +51,7 @@ python:deploy:
     rules:
         -   if: '$CI_COMMIT_BRANCH == "master"'
     script:
-        - poetry config repositories.lrz https://gitlab.lrz.de/api/v4/projects/43999/packages/pypi
+        - poetry config repositories.lrz https://gitlab.lrz.de/api/v4/projects/${PROJECT_ID}/packages/pypi
         - poetry publish --repository lrz --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD}
     stage: deploy
     needs:
