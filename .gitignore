@@ -24,3 +24,7 @@ EvaluationData
 __pycache__
 .idea
 .vscode
+dist/
+**/cobertura.xml
+**/mypy.xml
+**/flake8.json

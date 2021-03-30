@@ -1,0 +1,82 @@
+stages:
+- pre-analysis
+- build
+- deploy
+
+python:quality:
+    artifacts:
+        reports:
+            codequality: flake8.json
+            cobertura: cobertura.xml
+            junit: mypy.xml
+        expire_in: 10 days
+    cache: &python-cache
+        key: ${CI_COMMIT_REF_SLUG}
+        paths:
+            - ".venv"
+    coverage: '/line-rate="0.([0-9]{1,2})\d*"/'
+    image: gitlab.lrz.de:5005/i4/software/docker-images/python3.9-poetry
+    needs: [ ]
+    rules: &python-rules
+        -   changes:
+                - "powerpoint_automation/**.py"
+                - .gitlab-ci.yml
+        -   if: '$CI_COMMIT_BRANCH == "master"'
+        -   if: '$CI_COMMIT_BRANCH == "development"'
+    script:
+        - poetry install
+        - poetry run flake8 --exit-zero --format gl-codeclimate --output-file flake8.json powerpoint_automation
+        - poetry run mypy --cobertura-xml-report=. --junit-xml=mypy.xml --pretty powerpoint_automation
+        - head -n 1 cobertura.xml
+    stage: pre-analysis
+
+python:build:
+    artifacts:
+        paths:
+            - dist
+        expire_in: 3 days
+    cache: *python-cache
+    image: gitlab.lrz.de:5005/i4/software/docker-images/python3.9-poetry
+    needs:
+        - python:quality
+    rules: *python-rules
+    script:
+        - poetry install --no-dev
+        - poetry build
+    stage: build
+
+python:deploy:
+    cache: *python-cache
+    image: gitlab.lrz.de:5005/i4/software/docker-images/python3.9-poetry
+    rules:
+        -   if: '$CI_COMMIT_BRANCH == "master"'
+    script:
+        - poetry config repositories.lrz https://gitlab.lrz.de/api/v4/projects/43999/packages/pypi
+        - poetry publish --repository lrz --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD}
+    stage: deploy
+    needs:
+        - python:build
+
+
+docker:deploy:
+    stage: deploy
+    image: docker:stable
+    services:
+        - docker:18-dind
+    script:
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        - docker pull $IMAGE_NAME:latest || true
+        - docker build --tag $IMAGE_NAME:$CI_COMMIT_SHA --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:$CI_COMMIT_SHORT_SHA --tag $IMAGE_NAME:$CI_COMMIT_REF_NAME .
+        - docker push $IMAGE_NAME
+    tags:
+        - docker
+        - privileged
+    variables:
+        DOCKER_DRIVER: overlay2
+        DOCKER_HOST: tcp://docker:2375
+        IMAGE_NAME: $CI_REGISTRY_IMAGE/powerpoint_automation
+    rules:
+    -   if: '$CI_COMMIT_BRANCH == "master"'
+    -   if: '$CI_COMMIT_BRANCH == "development"'
+    needs:
+    - python:build
