@@ -4,10 +4,8 @@ Convert.
 from hashlib import sha3_256
 from json import dump, load
 from logging import INFO, basicConfig, getLogger
-from os import chmod
 from os.path import isfile
 from pathlib import Path as pathlib_Path
-from stat import S_IRUSR, S_IWUSR
 from subprocess import call
 from sys import platform, stdout
 from typing import Any, List, MutableMapping, Optional
@@ -157,9 +155,7 @@ def remove_picture(
         if rewrite_file:
             if inplace:
                 _LOGGER.info(f"Rewrite file {input_file}")
-                chmod(input_file, S_IRUSR | S_IWUSR)
                 pres.save(input_file)
-                chmod(input_file, S_IRUSR)
             else:
                 new_file_name = (
                     str(input_file)
