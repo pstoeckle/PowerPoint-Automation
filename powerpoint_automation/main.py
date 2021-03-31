@@ -118,25 +118,25 @@ def convert_presentations(
         dump(content, f_write, indent=4)
 
 
+@option("--inplace", "-i", is_flag=True, default=False)
 @_INPUT_DIRECTORY_OPTION
-@option("--hash-values", "-S", multiple=True, default=None)
+@option("--hash-value", "-S", multiple=True, default=None)
 @main_group.command()
-def remove_picture(input_directory: str, hash_values: Optional[List[str]]) -> None:
+def remove_picture(
+    input_directory: str, hash_value: Optional[List[str]], inplace: bool
+) -> None:
     """
     Remove the pictures from all slides.
-    :param input_directory:
-    :param hash_values:
-    :return:
     """
-    if hash_values is None or len(hash_values) == 0:
+    if hash_value is None or len(hash_value) == 0:
         _LOGGER.info("No hashes ...")
         return
-    hashes_set = frozenset(h.casefold() for h in hash_values)
+    hashes_set = frozenset(h.casefold() for h in hash_value)
     input_directory_path = pathlib_Path(input_directory)
     pptx_files = [
         f
         for f in input_directory_path.iterdir()
-        if f.is_file() and f.suffix == ".pptx" and not f.stem.startswith("~")
+        if f.is_file() and f.suffix.casefold() == ".pptx" and not f.stem.startswith("~")
     ]
     for input_file in pptx_files:
         pres = Presentation(input_file)
@@ -153,8 +153,17 @@ def remove_picture(input_directory: str, hash_values: Optional[List[str]]) -> No
                     old_pic = shape_to_delete._element
                     old_pic.getparent().remove(old_pic)
         if rewrite_file:
-            _LOGGER.info(f"Rewrite file {input_file}")
-            pres.save(input_file)
+            if inplace:
+                _LOGGER.info(f"Rewrite file {input_file}")
+                pres.save(input_file)
+            else:
+                new_file_name = (
+                    str(input_file)
+                    .replace(".pptx", ".out.pptx")
+                    .replace(".PPTX", ".out.pptx")
+                )
+                _LOGGER.info(f"Write file {input_file}")
+                pres.save(new_file_name)
 
 
 def _convert_file(
