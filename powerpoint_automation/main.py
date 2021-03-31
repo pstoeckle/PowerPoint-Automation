@@ -8,14 +8,16 @@ from os.path import isfile
 from pathlib import Path as pathlib_Path
 from subprocess import call
 from sys import platform, stdout
-from typing import Any, MutableMapping
+from typing import Any, List, MutableMapping, Optional
 
 from click import Context, Path, echo, group, option
+from pptx import Presentation
+from pptx.shapes.picture import Picture
 
 from powerpoint_automation import __version__
 
+LINUX_LIBREOFFICE = "/usr/bin/libreoffice"
 MAC_OS_SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
-
 LIBRE_OFFICE = "NOT_SET"
 CACHE_FILE = ".powerpoint-automation.json"
 
@@ -25,6 +27,13 @@ basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     level=INFO,
     stream=stdout,
+)
+
+_INPUT_DIRECTORY_OPTION = option(
+    "--input-directory",
+    "-d",
+    type=Path(exists=True, file_okay=False, resolve_path=True),
+    default=".",
 )
 
 
@@ -45,8 +54,8 @@ def _print_version(ctx: Context, _: Any, value: Any) -> None:
 def _set_libreoffice() -> None:
     global LIBRE_OFFICE
 
-    if (platform == "linux" or platform == "linux2") and isfile("/usr/bin/libreoffice"):
-        LIBRE_OFFICE = "/usr/bin/libreoffice"
+    if (platform == "linux" or platform == "linux2") and isfile(LINUX_LIBREOFFICE):
+        LIBRE_OFFICE = LINUX_LIBREOFFICE
     elif platform == "darwin" and isfile(MAC_OS_SOFFICE):
         LIBRE_OFFICE = MAC_OS_SOFFICE
     else:
@@ -72,12 +81,7 @@ def main_group() -> None:
     """
 
 
-@option(
-    "--input-directory",
-    "-d",
-    type=Path(exists=True, file_okay=False, resolve_path=True),
-    default=".",
-)
+@_INPUT_DIRECTORY_OPTION
 @option(
     "--output-directory",
     "-o",
@@ -112,6 +116,45 @@ def convert_presentations(
         _convert_file(content, libre_office, file, output_directory_path)
     with cache_file.open("w") as f_write:
         dump(content, f_write, indent=4)
+
+
+@_INPUT_DIRECTORY_OPTION
+@option("--hash-values", "-S", multiple=True, default=None)
+@main_group.command()
+def remove_picture(input_directory: str, hash_values: Optional[List[str]]) -> None:
+    """
+    Remove the pictures from all slides.
+    :param input_directory:
+    :param hash_values:
+    :return:
+    """
+    if hash_values is None or len(hash_values) == 0:
+        _LOGGER.info("No hashes ...")
+        return
+    hashes_set = frozenset(h.casefold() for h in hash_values)
+    input_directory_path = pathlib_Path(input_directory)
+    pptx_files = [
+        f
+        for f in input_directory_path.iterdir()
+        if f.is_file() and f.suffix == ".pptx" and not f.stem.startswith("~")
+    ]
+    for input_file in pptx_files:
+        pres = Presentation(input_file)
+        rewrite_file = False
+        for slide in pres.slides:
+            shapes_to_delete = []
+            for shape in slide.shapes:
+                if isinstance(shape, Picture):
+                    if shape.image.sha1.casefold() in hashes_set:
+                        shapes_to_delete.append(shape)
+            if len(shapes_to_delete) > 0:
+                rewrite_file = True
+                for shape_to_delete in shapes_to_delete:
+                    old_pic = shape_to_delete._element
+                    old_pic.getparent().remove(old_pic)
+        if rewrite_file:
+            _LOGGER.info(f"Rewrite file {input_file}")
+            pres.save(input_file)
 
 
 def _convert_file(
