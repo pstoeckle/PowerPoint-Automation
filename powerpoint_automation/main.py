@@ -1,12 +1,9 @@
 """
 Convert.
 """
-from datetime import datetime
 from logging import INFO, basicConfig, getLogger
-from os import linesep
 from os.path import isfile
 from pathlib import Path as pathlib_Path
-from subprocess import check_output
 from sys import platform, stdout
 from typing import Any, List, Optional, Sequence
 
@@ -15,6 +12,7 @@ from pptx import Presentation
 
 from powerpoint_automation import __version__
 from powerpoint_automation.logic.add_git_info import add_git_info_internal
+from powerpoint_automation.logic.add_meta_data import add_meta_data_internal
 from powerpoint_automation.logic.convert_presentations import (
     convert_presentations_internal,
 )
@@ -163,34 +161,7 @@ def add_meta_data(input_directory: str, author: Optional[Sequence[str]]) -> None
     Adds a footer with the latest commit's hash and date.
     """
     input_directory_path = pathlib_Path(input_directory)
-    pptx_files = [
-        f
-        for f in input_directory_path.iterdir()
-        if f.is_file() and f.suffix.casefold() == ".pptx" and not f.stem.startswith("~")
-    ]
-    for input_file in pptx_files:
-        _LOGGER.info(f"Processing file {input_file}")
-        pres = Presentation(input_file)
-        commit_date = check_output(
-            ["git", "log", "-n", "1", "--pretty=format:%aI", "--", input_file]
-        ).decode("utf8")
-        last_commit = check_output(
-            ["git", "log", "-n", "1", "--pretty=format:%h", "--", input_file]
-        ).decode("utf8")
-        commits = check_output(
-            ["git", "log", "--follow", "--pretty=format:%aI", "--", input_file]
-        ).decode("utf8")
-        *_, first_commit_date = commits.split(linesep)
-        pres.core_properties.created = datetime.fromisoformat(first_commit_date)
-        pres.core_properties.modified = datetime.fromisoformat(commit_date)
-        pres.core_properties.version = last_commit
-        pres.core_properties.author = ", ".join(author)
-        pres.core_properties.language = "English"
-        pres.core_properties.keywords = "Security"
-        pres.core_properties.category = "Lecture slides"
-        pres.core_properties.content_status = "final"
-        pres.save(input_file)
-        _LOGGER.info(f"{input_file}: Done")
+    add_meta_data_internal(author, input_directory_path)
 
 
 @option("--inplace", "-i", is_flag=True, default=False)
