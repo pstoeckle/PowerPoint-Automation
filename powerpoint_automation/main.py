@@ -161,6 +161,8 @@ def add_meta_data(input_directory: str, author: Optional[Sequence[str]]) -> None
     Adds a footer with the latest commit's hash and date.
     """
     input_directory_path = pathlib_Path(input_directory)
+    if author is None:
+        author = []
     add_meta_data_internal(author, input_directory_path)
 
 
