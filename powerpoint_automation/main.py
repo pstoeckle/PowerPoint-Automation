@@ -6,13 +6,14 @@ from json import dump, load
 from logging import INFO, basicConfig, getLogger
 from os.path import isfile
 from pathlib import Path as pathlib_Path
-from subprocess import call
+from subprocess import call, check_output
 from sys import platform, stdout
 from typing import Any, List, MutableMapping, Optional
 
 from click import Context, Path, echo, group, option
 from pptx import Presentation
 from pptx.shapes.picture import Picture
+from pptx.util import Cm, Inches, Pt
 
 from powerpoint_automation import __version__
 
@@ -118,7 +119,6 @@ def convert_presentations(
         dump(content, f_write, indent=4)
 
 
-@option("--inplace", "-i", is_flag=True, default=False)
 @option("--old-year", "-O", type=int, default=2020)
 @option("--new-year", "-N", type=int, default=2021)
 @_INPUT_DIRECTORY_OPTION
@@ -138,13 +138,45 @@ def replace_date(input_directory: str, old_year: int, new_year: int) -> None:
                 if not shape.has_text_frame:
                     continue
                 old_text = shape.text.casefold().replace(" ", "")
-                if "|securityengineering|" in old_text and f"summer{old_year}" in old_text:
+                if (
+                    "|securityengineering|" in old_text
+                    and f"summer{old_year}" in old_text
+                ):
                     shape.text = f"Prof. Dr. Alexander Pretschner (I4) | Security Engineering | Summer {new_year}"
                     rewrite_file = True
                     _LOGGER.info(f"{input_file}: Changing field on slide  {slide_no}")
                     continue
         if rewrite_file:
             pres.save(input_file)
+
+
+@_INPUT_DIRECTORY_OPTION
+@main_group.command()
+def add_git_info(input_directory: str) -> None:
+    """
+    Adds a footer with the latest commit's hash and date.
+    """
+    input_directory_path = pathlib_Path(input_directory)
+    pptx_files = [
+        f
+        for f in input_directory_path.iterdir()
+        if f.is_file() and f.suffix.casefold() == ".pptx" and not f.stem.startswith("~")
+    ]
+    for input_file in pptx_files:
+        pres = Presentation(input_file)
+        commit_sha = check_output(
+            ["git", "log", "-n", "1", "--pretty=format:%h", "--", input_file]
+        ).decode("utf8")
+        commit_date = check_output(
+            ["git", "log", "-n", "1", "--pretty=format:%aI", "--", input_file]
+        ).decode("utf8")
+        for slide_no, slide in enumerate(pres.slides):
+            text_box = slide.shapes.add_textbox(Cm(24), Cm(17.33), Cm(7), Cm(1))
+            tf = text_box.text_frame
+            p = tf.add_paragraph()
+            p.font.size = Pt(10)
+            p.text = f"{commit_date} | {commit_sha}"
+        pres.save(input_file)
 
 
 @option("--inplace", "-i", is_flag=True, default=False)
