@@ -6,16 +6,16 @@ from json import dump, load
 from logging import INFO, basicConfig, getLogger
 from os.path import isfile
 from pathlib import Path as pathlib_Path
-from subprocess import call, check_output
+from subprocess import call
 from sys import platform, stdout
 from typing import Any, List, MutableMapping, Optional
 
 from click import Context, Path, echo, group, option
 from pptx import Presentation
 from pptx.shapes.picture import Picture
-from pptx.util import Cm, Inches, Pt
 
 from powerpoint_automation import __version__
+from powerpoint_automation.logic.add_git_info import add_git_info_internal
 
 LINUX_LIBREOFFICE = "/usr/bin/libreoffice"
 MAC_OS_SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
@@ -157,26 +157,7 @@ def add_git_info(input_directory: str) -> None:
     Adds a footer with the latest commit's hash and date.
     """
     input_directory_path = pathlib_Path(input_directory)
-    pptx_files = [
-        f
-        for f in input_directory_path.iterdir()
-        if f.is_file() and f.suffix.casefold() == ".pptx" and not f.stem.startswith("~")
-    ]
-    for input_file in pptx_files:
-        pres = Presentation(input_file)
-        commit_sha = check_output(
-            ["git", "log", "-n", "1", "--pretty=format:%h", "--", input_file]
-        ).decode("utf8")
-        commit_date = check_output(
-            ["git", "log", "-n", "1", "--pretty=format:%aI", "--", input_file]
-        ).decode("utf8")
-        for slide_no, slide in enumerate(pres.slides):
-            text_box = slide.shapes.add_textbox(Cm(24), Cm(17.33), Cm(7), Cm(1))
-            tf = text_box.text_frame
-            p = tf.add_paragraph()
-            p.font.size = Pt(10)
-            p.text = f"{commit_date} | {commit_sha}"
-        pres.save(input_file)
+    add_git_info_internal(input_directory_path)
 
 
 @option("--inplace", "-i", is_flag=True, default=False)
