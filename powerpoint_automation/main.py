@@ -119,6 +119,35 @@ def convert_presentations(
 
 
 @option("--inplace", "-i", is_flag=True, default=False)
+@option("--old-year", "-O", type=int, default=2020)
+@option("--new-year", "-N", type=int, default=2021)
+@_INPUT_DIRECTORY_OPTION
+@main_group.command()
+def replace_date(input_directory: str, old_year: int, new_year: int) -> None:
+    input_directory_path = pathlib_Path(input_directory)
+    pptx_files = [
+        f
+        for f in input_directory_path.iterdir()
+        if f.is_file() and f.suffix.casefold() == ".pptx" and not f.stem.startswith("~")
+    ]
+    for input_file in pptx_files:
+        pres = Presentation(input_file)
+        rewrite_file = False
+        for slide_no, slide in enumerate(pres.slides):
+            for shape in slide.shapes:
+                if not shape.has_text_frame:
+                    continue
+                old_text = shape.text.casefold().replace(" ", "")
+                if "|securityengineering|" in old_text and f"summer{old_year}" in old_text:
+                    shape.text = f"Prof. Dr. Alexander Pretschner (I4) | Security Engineering | Summer {new_year}"
+                    rewrite_file = True
+                    _LOGGER.info(f"{input_file}: Changing field on slide  {slide_no}")
+                    continue
+        if rewrite_file:
+            pres.save(input_file)
+
+
+@option("--inplace", "-i", is_flag=True, default=False)
 @_INPUT_DIRECTORY_OPTION
 @option("--hash-value", "-S", multiple=True, default=None)
 @main_group.command()
