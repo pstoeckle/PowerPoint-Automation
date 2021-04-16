@@ -6,6 +6,7 @@ from json import dump, load
 from logging import getLogger
 from pathlib import Path
 from subprocess import call
+from sys import platform
 from typing import AbstractSet, MutableMapping
 
 CACHE_FILE = ".powerpoint-automation.json"
@@ -56,18 +57,38 @@ def _convert_file(
         _LOGGER.info(f"The file {file} has not changed since the last conversion.")
         return
     _LOGGER.info(f"Convert {file} to PDF")
-    call(
-        [
-            libre_office,
-            "--headless",
-            "--convert-to",
-            "pdf",
-            file,
-            "--print-to-file",
-            "--outdir",
-            str(output_directory_path),
-        ]
-    )
+    if platform == "win32":
+        _LOGGER.info("Converting on Windows")
+        import sys
+        import subprocess
+        script_path = output_directory_path.joinpath('t.ps1')
+        out_file = output_directory_path.joinpath(file.name.replace(file.suffix, '.pdf'))
+        with script_path.open('w') as f_write:
+            f_write.write(
+                    rf"""
+                    $ppt = New-Object -com powerpoint.application
+                    $open_presentation = $ppt.Presentations.Open("{file}") 
+                    $open_presentation.SaveAs("{out_file}", [Microsoft.Office.Interop.PowerPoint.PpSaveAsFileType]::ppSaveAsPDF)
+                    $open_presentation.Close()
+                    """
+            )
+        p = subprocess.Popen(["powershell.exe", str(script_path)], stdout=sys.stdout)
+        p.communicate()
+        from os import remove
+        remove(script_path)
+    else:
+        call(
+            [
+                libre_office,
+                "--headless",
+                "--convert-to",
+                "pdf",
+                file,
+                "--print-to-file",
+                "--outdir",
+                str(output_directory_path),
+            ]
+        )
     cache_content[str(file)] = file_hash
 
 

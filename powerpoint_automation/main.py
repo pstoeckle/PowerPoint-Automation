@@ -60,7 +60,7 @@ def _set_libreoffice() -> None:
     elif platform == "darwin" and isfile(MAC_OS_SOFFICE):
         LIBRE_OFFICE = MAC_OS_SOFFICE
     else:
-        _LOGGER.critical(f"Could not find Libreoffice... ({platform}")
+        _LOGGER.debug(f"Using PowerPoint for Windows.")
 
 
 _set_libreoffice()
@@ -93,7 +93,7 @@ def main_group() -> None:
 @option(
     "--libre-office",
     "-L",
-    type=Path(exists=True, resolve_path=True, dir_okay=False),
+    type=Path(resolve_path=True, dir_okay=False),
     default=LIBRE_OFFICE,
 )
 @main_group.command()
