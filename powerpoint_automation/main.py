@@ -60,7 +60,7 @@ def _set_libreoffice() -> None:
     elif platform == "darwin" and isfile(MAC_OS_SOFFICE):
         LIBRE_OFFICE = MAC_OS_SOFFICE
     else:
-        _LOGGER.critical(f"Could not find Libreoffice... ({platform}")
+        _LOGGER.debug(f"Using PowerPoint for Windows.")
 
 
 _set_libreoffice()
@@ -82,6 +82,7 @@ def main_group() -> None:
     """
 
 
+@option("--skip-file", "-s", multiple=True, default=None)
 @_INPUT_DIRECTORY_OPTION
 @option(
     "--output-directory",
@@ -92,20 +93,28 @@ def main_group() -> None:
 @option(
     "--libre-office",
     "-L",
-    type=Path(exists=True, resolve_path=True, dir_okay=False),
+    type=Path(resolve_path=True, dir_okay=False),
     default=LIBRE_OFFICE,
 )
 @main_group.command()
 def convert_presentations(
-    input_directory: str, output_directory: str, libre_office: str
+    input_directory: str,
+    output_directory: str,
+    libre_office: str,
+    skip_file: Optional[Sequence[str]],
 ) -> None:
     """
     Converts PowerPoint files to PDFs.
     """
     input_directory_path = pathlib_Path(input_directory)
     output_directory_path = pathlib_Path(output_directory)
+    skip_files = (
+        frozenset()
+        if skip_file is None
+        else frozenset(s.casefold().strip() for s in skip_file)
+    )
     convert_presentations_internal(
-        input_directory_path, libre_office, output_directory_path
+        input_directory_path, libre_office, output_directory_path, skip_files
     )
 
 

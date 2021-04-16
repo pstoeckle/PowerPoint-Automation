@@ -38,8 +38,15 @@ def add_meta_data_internal(author: Sequence[str], input_directory_path: Path) ->
             ["git", "log", "--follow", "--pretty=format:%aI", "--", input_file]
         ).decode("utf8")
         *_, first_commit_date = commits.split(linesep)
-        pres.core_properties.created = datetime.fromisoformat(first_commit_date)
-        pres.core_properties.modified = datetime.fromisoformat(commit_date)
+        try:
+            pres.core_properties.created = datetime.fromisoformat(first_commit_date)
+        except ValueError:
+            _LOGGER.warning(f"We could not determine creation date for {input_file}")
+
+        try:
+            pres.core_properties.modified = datetime.fromisoformat(commit_date)
+        except ValueError:
+            _LOGGER.warning(f"We could not last change date for {input_file}")
         pres.core_properties.version = last_commit
         pres.core_properties.author = ", ".join(author)
         pres.core_properties.language = "English"
