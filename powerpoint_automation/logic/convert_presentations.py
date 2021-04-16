@@ -4,9 +4,10 @@ Convert PPTX to PDFs.
 from hashlib import sha3_256
 from json import dump, load
 from logging import getLogger
+from os import remove
 from pathlib import Path
-from subprocess import call
-from sys import platform
+from subprocess import Popen, call
+from sys import platform, stdout
 from typing import AbstractSet, MutableMapping
 
 CACHE_FILE = ".powerpoint-automation.json"
@@ -59,22 +60,23 @@ def _convert_file(
     _LOGGER.info(f"Convert {file} to PDF")
     if platform == "win32":
         _LOGGER.info("Converting on Windows")
-        import sys
-        import subprocess
-        script_path = output_directory_path.joinpath('t.ps1')
-        out_file = output_directory_path.joinpath(file.name.replace(file.suffix, '.pdf'))
-        with script_path.open('w') as f_write:
+        script_path = output_directory_path.joinpath("t.ps1")
+        out_file = output_directory_path.joinpath(
+            file.name.replace(file.suffix, ".pdf")
+        )
+        with script_path.open("w") as f_write:
             f_write.write(
-                    rf"""
+                rf"""
                     $ppt = New-Object -com powerpoint.application
                     $open_presentation = $ppt.Presentations.Open("{file}") 
                     $open_presentation.SaveAs("{out_file}", [Microsoft.Office.Interop.PowerPoint.PpSaveAsFileType]::ppSaveAsPDF)
                     $open_presentation.Close()
                     """
             )
-        p = subprocess.Popen(["powershell.exe", str(script_path)], stdout=sys.stdout)
+        _LOGGER.info(f"Opening PowerPoint ...")
+        p = Popen(["powershell.exe", str(script_path)], stdout=stdout)
         p.communicate()
-        from os import remove
+        _LOGGER.info(f"Closing PowerPoint ...")
         remove(script_path)
     else:
         call(
