@@ -82,6 +82,7 @@ def main_group() -> None:
     """
 
 
+@option("--skip-file", "-s", multiple=True, default=None)
 @_INPUT_DIRECTORY_OPTION
 @option(
     "--output-directory",
@@ -97,15 +98,23 @@ def main_group() -> None:
 )
 @main_group.command()
 def convert_presentations(
-    input_directory: str, output_directory: str, libre_office: str
+    input_directory: str,
+    output_directory: str,
+    libre_office: str,
+    skip_file: Optional[Sequence[str]],
 ) -> None:
     """
     Converts PowerPoint files to PDFs.
     """
     input_directory_path = pathlib_Path(input_directory)
     output_directory_path = pathlib_Path(output_directory)
+    skip_files = (
+        frozenset()
+        if skip_file is None
+        else frozenset(s.casefold().strip() for s in skip_file)
+    )
     convert_presentations_internal(
-        input_directory_path, libre_office, output_directory_path
+        input_directory_path, libre_office, output_directory_path, skip_files
     )
 
 
