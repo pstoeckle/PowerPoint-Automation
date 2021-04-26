@@ -36,7 +36,7 @@ def process_all_pptx_files_in_folder(folder: str) -> None:
         process_pptx_file(pptx_filename, True)
 
 
-def process_pptx_file(pptx_filename: str, print_to_file=False) -> str:
+def process_pptx_file(pptx_filename: str, print_to_file: bool = False) -> str:
     """
 
     :param pptx_filename:
