@@ -7,7 +7,7 @@ from pathlib import Path as pathlib_Path
 from sys import platform, stdout
 from typing import Any, List, Optional, Sequence
 
-from click import Context, Path, echo, group, option
+from click import Context, Path, argument, echo, group, option
 from pptx import Presentation
 
 from powerpoint_automation import __version__
@@ -16,6 +16,7 @@ from powerpoint_automation.logic.add_meta_data import add_meta_data_internal
 from powerpoint_automation.logic.convert_presentations import (
     convert_presentations_internal,
 )
+from powerpoint_automation.logic.create_txt_for_powerpoint import process_pptx_file
 from powerpoint_automation.logic.remove_picture import remove_picture_internal
 
 LINUX_LIBREOFFICE = "/usr/bin/libreoffice"
@@ -191,6 +192,16 @@ def remove_picture(
     hashes_set = frozenset(h.casefold() for h in hash_value)
     input_directory_path = pathlib_Path(input_directory)
     remove_picture_internal(hashes_set, inplace, input_directory_path)
+
+
+@main_group.command()
+@argument("filename", type=Path(exists=True, resolve_path=True, dir_okay=False))
+def git_pptx_diff(filename: str) -> None:
+    """
+
+    :return:
+    """
+    print(process_pptx_file(filename))
 
 
 if __name__ == "__main__":
