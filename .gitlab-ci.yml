@@ -23,6 +23,7 @@ python:quality:
                 - .gitlab-ci.yml
         -   if: '$CI_COMMIT_BRANCH == "master"'
         -   if: '$CI_COMMIT_BRANCH == "development"'
+        -   if: '$CI_COMMIT_TAG'
     script:
         - poetry install
         - poetry run flake8 --exit-zero --format gl-codeclimate --output-file flake8.json powerpoint_automation
@@ -49,7 +50,7 @@ python:deploy:
     cache: *python-cache
     image: gitlab.lrz.de:5005/i4/software/docker-images/python3.9-poetry
     rules:
-        -   if: '$CI_COMMIT_BRANCH == "master"'
+    -   if: '$CI_COMMIT_TAG'
     script:
         - poetry config repositories.lrz https://gitlab.lrz.de/api/v4/projects/${PROJECT_ID}/packages/pypi
         - poetry publish --repository lrz --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD}
@@ -66,7 +67,16 @@ docker:deploy:
     script:
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
         - docker pull $IMAGE_NAME:latest || true
-        - docker build --tag $IMAGE_NAME:$CI_COMMIT_SHA --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:$CI_COMMIT_SHORT_SHA --tag $IMAGE_NAME:$CI_COMMIT_REF_NAME .
+        - docker build
+            --build-arg=COMMIT=$CI_COMMIT_SHA
+            --build-arg=BRANCH=$CI_COMMIT_BRANCH
+            --build-arg=COMMIT_SHORT=$CI_COMMIT_SHORT_SHA
+            --build-arg=TAG=$CI_COMMIT_TAG
+            --tag $IMAGE_NAME:$CI_COMMIT_SHA
+            --tag $IMAGE_NAME:latest
+            --tag $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+            --tag $IMAGE_NAME:$CI_COMMIT_REF_NAME
+            .
         - docker push $IMAGE_NAME
     tags:
         - docker
@@ -78,5 +88,6 @@ docker:deploy:
     rules:
     -   if: '$CI_COMMIT_BRANCH == "master"'
     -   if: '$CI_COMMIT_BRANCH == "development"'
+    -   if: '$CI_COMMIT_TAG'
     needs:
     - python:build
