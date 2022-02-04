@@ -20,6 +20,8 @@ def add_meta_data_internal(author: Sequence[str], input_directory_path: Path) ->
     :param input_directory_path:
     :return:
     """
+    authors = [a.strip() for a in author]
+    _LOGGER.info(f"Using authors {authors}")
     pptx_files = [
         f
         for f in input_directory_path.iterdir()
@@ -48,7 +50,7 @@ def add_meta_data_internal(author: Sequence[str], input_directory_path: Path) ->
         except ValueError:
             _LOGGER.warning(f"We could not last change date for {input_file}")
         pres.core_properties.version = last_commit
-        pres.core_properties.author = ", ".join(author)
+        pres.core_properties.author = ";".join(authors)
         pres.core_properties.language = "English"
         pres.core_properties.keywords = "Security"
         pres.core_properties.category = "Lecture slides"
