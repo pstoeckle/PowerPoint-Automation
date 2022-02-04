@@ -20,7 +20,7 @@ def convert_presentations_internal(
     input_directory_path: Path,
     libre_office: Path,
     output_directory_path: Path,
-    skip_files: AbstractSet[Path],
+    skip_files: AbstractSet[str],
 ) -> None:
     """
 

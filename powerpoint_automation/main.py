@@ -37,7 +37,7 @@ _INPUT_DIRECTORY_OPTION = Option(
 )
 
 
-def _version_callback(value: bool):
+def _version_callback(value: bool)-> None:
     if value:
         echo(f"mod-pythons-scripts {__version__}")
         raise Exit()
@@ -104,8 +104,8 @@ def convert_presentations(
         resolve_path=True,
         dir_okay=False,
     ),
-    skip_file: Optional[List[Path]] = Option(
-        None, "--skip-file", "-s", exists=True, resolve_path=True
+    skip_file: Optional[List[str]] = Option(
+        None, "--skip-file", "-s"
     ),
 ) -> None:
     """
