@@ -10,15 +10,17 @@ from subprocess import Popen, call
 from sys import platform, stdout
 from typing import AbstractSet, MutableMapping
 
-CACHE_FILE = ".powerpoint-automation.json"
+from typer import echo
+
+_CACHE_FILE = ".powerpoint-automation.json"
 _LOGGER = getLogger(__name__)
 
 
 def convert_presentations_internal(
     input_directory_path: Path,
-    libre_office: str,
+    libre_office: Path,
     output_directory_path: Path,
-    skip_files: AbstractSet[str],
+    skip_files: AbstractSet[Path],
 ) -> None:
     """
 
@@ -29,7 +31,7 @@ def convert_presentations_internal(
     :return:
     """
     _setup_output_directory(output_directory_path)
-    cache_file = input_directory_path.joinpath(CACHE_FILE)
+    cache_file = input_directory_path.joinpath(_CACHE_FILE)
     content = _load_cache(cache_file)
     files = list(input_directory_path.iterdir())
     files = [
@@ -39,7 +41,7 @@ def convert_presentations_internal(
     ]
     for file in files:
         if file.stem.casefold().strip() in skip_files:
-            _LOGGER.info(f"We will ignore {file}.")
+            echo(f"We will ignore {file}.")
             continue
         _convert_file(content, libre_office, file, output_directory_path)
     with cache_file.open("w") as f_write:
@@ -49,17 +51,17 @@ def convert_presentations_internal(
 
 def _convert_file(
     cache_content: MutableMapping[str, str],
-    libre_office: str,
+    libre_office: Path,
     file: Path,
     output_directory_path: Path,
 ) -> None:
     file_hash = hash_file(file)
     if str(file) in cache_content.keys() and cache_content[str(file)] == file_hash:
-        _LOGGER.info(f"The file {file} has not changed since the last conversion.")
+        echo(f"The file {file} has not changed since the last conversion.")
         return
-    _LOGGER.info(f"Convert {file} to PDF")
+    echo(f"Convert {file} to PDF")
     if platform == "win32":
-        _LOGGER.info("Converting on Windows")
+        echo("Converting on Windows")
         script_path = output_directory_path.joinpath("t.ps1")
         out_file = output_directory_path.joinpath(
             file.name.replace(file.suffix, ".pdf")
@@ -81,7 +83,7 @@ def _convert_file(
     else:
         call(
             [
-                libre_office,
+                str(libre_office),
                 "--headless",
                 "--convert-to",
                 "pdf",

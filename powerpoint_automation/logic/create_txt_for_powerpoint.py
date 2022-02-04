@@ -5,6 +5,7 @@ Commands.
 """
 
 from os import linesep, listdir, mkdir, path
+from pathlib import Path
 
 from pptx import Presentation
 from pptx.shapes.autoshape import Shape
@@ -20,7 +21,7 @@ _TEXTS = "texts"
 _PPTX = ".pptx"
 
 
-def process_all_pptx_files_in_folder(folder: str) -> None:
+def process_all_pptx_files_in_folder(folder: Path) -> None:
     """
 
     :return:
@@ -28,7 +29,7 @@ def process_all_pptx_files_in_folder(folder: str) -> None:
     if not path.isdir(_TEXTS):
         mkdir(_TEXTS)
     pptx_files = [
-        path.join(folder, f)
+        folder.joinpath(f)
         for f in listdir(folder)
         if f.endswith(_PPTX) and not f.startswith("~")
     ]
@@ -36,7 +37,7 @@ def process_all_pptx_files_in_folder(folder: str) -> None:
         process_pptx_file(pptx_filename, True)
 
 
-def process_pptx_file(pptx_filename: str, print_to_file: bool = False) -> str:
+def process_pptx_file(pptx_filename: Path, print_to_file: bool = False) -> str:
     """
 
     :param pptx_filename:
@@ -50,7 +51,7 @@ def process_pptx_file(pptx_filename: str, print_to_file: bool = False) -> str:
         for j, shape in enumerate(slide.shapes):
             string_to_write += _handle_shape(j, shape, 1)
         string_to_write += f"{END}: slide {i}" + linesep + linesep
-    pptx_filename_replace = path.join(_TEXTS, pptx_filename.replace(_PPTX, ".txt"))
+    pptx_filename_replace = path.join(_TEXTS, str(pptx_filename).replace(_PPTX, ".txt"))
     if print_to_file:
         with open(pptx_filename_replace, "w") as f_write:
             f_write.write(string_to_write)
