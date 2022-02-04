@@ -37,9 +37,9 @@ _INPUT_DIRECTORY_OPTION = Option(
 )
 
 
-def _version_callback(value: bool)-> None:
+def _version_callback(value: bool) -> None:
     if value:
-        echo(f"mod-pythons-scripts {__version__}")
+        echo(f"powerpoint-automation {__version__}")
         raise Exit()
 
 
@@ -104,9 +104,7 @@ def convert_presentations(
         resolve_path=True,
         dir_okay=False,
     ),
-    skip_file: Optional[List[str]] = Option(
-        None, "--skip-file", "-s"
-    ),
+    skip_file: Optional[List[str]] = Option(None, "--skip-file", "-s"),
 ) -> None:
     """
     Converts PowerPoint files to PDFs.
