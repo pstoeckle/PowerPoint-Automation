@@ -8,6 +8,7 @@ from sys import platform, stdout
 from typing import List, Optional
 
 from pptx import Presentation
+from pptx.shapes.autoshape import Shape
 
 from powerpoint_automation import __version__
 from powerpoint_automation.logic.add_git_info import add_git_info_internal
@@ -124,14 +125,19 @@ def replace_date(
     """
     Replace a date in the slides, e.g., 2020 -> 2021.
     """
-    pptx_files = [
+    pptx_files = sorted([
         f
         for f in input_directory_path.iterdir()
         if f.is_file() and f.suffix.casefold() == ".pptx" and not f.stem.startswith("~")
-    ]
+    ])
     for input_file in pptx_files:
         pres = Presentation(input_file)
         rewrite_file = False
+        for shape in pres.slide_master.shapes:
+            rewrite_file = _replace_old_year_in_shape(shape, new_year, old_year) or rewrite_file
+        for layout in pres.slide_master.slide_layouts:
+            for shape in layout.shapes:
+                rewrite_file = _replace_old_year_in_shape(shape, new_year, old_year) or rewrite_file
         for slide_no, slide in enumerate(pres.slides):
             for shape in slide.shapes:
                 if not shape.has_text_frame:
@@ -143,10 +149,28 @@ def replace_date(
                 ):
                     shape.text = f"Prof. Dr. Alexander Pretschner (I4) | Security Engineering | Summer {new_year}"
                     rewrite_file = True
-                    _LOGGER.info(f"{input_file}: Changing field on slide  {slide_no}")
+                    _LOGGER.debug(f"{input_file}: Changing field on slide  {slide_no}")
                     continue
+                if (
+                    "in2178–securityengineering" in old_text
+                    and f"summersemester{old_year}" in old_text
+                ):
+                    shape.text = shape.text.replace(str(old_year), str(new_year))
+                    rewrite_file = True
+                    _LOGGER.debug(f"{input_file}: Changing field on slide  {slide_no}")
+                    continue
+
         if rewrite_file:
+            echo(f"Rewrite file {input_file}")
             pres.save(input_file)
+
+
+def _replace_old_year_in_shape(shape: Shape, new_year: int, old_year: int )-> bool:
+    if shape.has_text_frame and str(old_year) in shape.text:
+        shape.text = shape.text.replace(str(old_year), str(new_year))
+        return True
+    return False
+
 
 
 @app.command()
