@@ -33,10 +33,9 @@ basicConfig(
     stream=stdout,
 )
 
-_INPUT_DIRECTORY_OPTION = Option(
-    ".", "--input-directory", "-d", exists=True, resolve_path=True
+_INPUT_DIRECTORY_OPTION = Argument(
+    ".", exists=True, resolve_path=True
 )
-
 
 def _version_callback(value: bool) -> None:
     if value:
@@ -69,8 +68,7 @@ def _call_back(
     )
 ) -> None:
     """
-
-    :return:
+    Scripts to automate some task in the context of PowerPoint.
     """
 
 
@@ -109,6 +107,7 @@ def convert_presentations(
 ) -> None:
     """
     Converts PowerPoint files to PDFs.
+    This is especially handy if you want to create many PDFs without exporting them manually one by one.
     """
     skip_files = frozenset() if skip_file is None else frozenset(s for s in skip_file)
     convert_presentations_internal(
@@ -124,6 +123,8 @@ def replace_date(
 ) -> None:
     """
     Replace a date in the slides, e.g., 2020 -> 2021.
+    This is especially handy at the beginning of a new semester where you have to update the slides of the
+    previous year.
     """
     pptx_files = sorted([
         f
@@ -174,20 +175,20 @@ def _replace_old_year_in_shape(shape: Shape, new_year: int, old_year: int )-> bo
 
 
 @app.command()
-def add_git_info(input_directory_path: Path = _INPUT_DIRECTORY_OPTION) -> None:
+def add_git_metadata_as_footer(input_directory_path: Path = _INPUT_DIRECTORY_OPTION) -> None:
     """
-    Adds a footer with the latest commit's hash and date.
+    Adds a footer to the PowerPoint slides with the latest commit's hash and date.
     """
     add_git_info_internal(input_directory_path)
 
 
 @app.command()
-def add_meta_data(
+def add_git_metadata_as_presentation_metadata(
     input_directory_path: Path = _INPUT_DIRECTORY_OPTION,
     author: Optional[List[str]] = Option(None, "--author", "-a"),
 ) -> None:
     """
-    Adds a footer with the latest commit's hash and date.
+    This commands adds git metadata to the PowerPoint slides, e.g., the commit, the authors, etc.
     """
     if author is None:
         author = []
