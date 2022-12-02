@@ -1,0 +1,6 @@
+.github/ @pstoeckle
+CODEOWNERS @pstoeckle
+Dockerfile @pstoeckle
+LICENSE @pstoeckle
+powerpoint_automation/ @pstoeckle
+pyproject.toml @pstoeckle
