@@ -1,11 +1,12 @@
 [tool.poetry]
 name = "powerpoint-automation"
 version = "0.1.9"
-description = ""
-authors = ["Patrick Stöckle <patrick.stoeckle@tum.de>"]
-maintainers = ["Patrick Stöckle <patrick.stoeckle@tum.de>"]
+description = "Scripts to automate some task in the context of PowerPoint."
+authors = ["Patrick Stöckle <patrick.stoeckle@posteo.de>"]
+maintainers = ["Patrick Stöckle <patrick.stoeckle@posteo.de>"]
 readme = "README.md"
-repository = "git@gitlab.lrz.de:i4/software/powerpoint-automation.git"
+license = "Apache-2.0"
+repository = "https://github.com/pstoeckle/PowerPoint-Automation.git"
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
@@ -29,8 +30,6 @@ flake8-rst-docstrings = "^0.0.14"
 flake8-string-format = "^0.3.0"
 mypy = "^0.812"
 lxml = "^4.6.3"
-
-
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
