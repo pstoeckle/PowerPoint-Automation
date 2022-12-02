@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "powerpoint-automation"
-version = "0.1.9"
+version = "0.1.10"
 description = "Scripts to automate some task in the context of PowerPoint."
 authors = ["Patrick Stöckle <patrick.stoeckle@posteo.de>"]
 maintainers = ["Patrick Stöckle <patrick.stoeckle@posteo.de>"]
