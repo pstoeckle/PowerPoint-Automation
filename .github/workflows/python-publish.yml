@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2022 Patrick Stöckle.
+# SPDX-License-Identifier: Apache-2.0
 name: "Build Python package and Docker container."
 
 on:
@@ -21,7 +23,7 @@ jobs:
       - name: Install poetry
         run: |
           sudo apt-get update -qq
-          sudo apt-get install wget -y 
+          sudo apt-get install wget -y
           pip install --no-cache-dir --upgrade pip==22.3.1
           wget -q --output-document=install-poetry.py https://install.python-poetry.org/
           python3 install-poetry.py

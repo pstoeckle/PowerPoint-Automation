@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2022 Patrick Stöckle.
+SPDX-License-Identifier: Apache-2.0
+-->
 # PowerPoint Automation
 
 I wrote these scripts during my time at the [Technical University of Munich (TUM)](https://www.tum.de/en/).

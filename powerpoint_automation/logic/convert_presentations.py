@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2022 Patrick Stöckle.
+# SPDX-License-Identifier: Apache-2.0
 """
 Convert PPTX to PDFs.
 """
@@ -70,7 +72,7 @@ def _convert_file(
             f_write.write(
                 rf"""
                     $ppt = New-Object -com powerpoint.application
-                    $open_presentation = $ppt.Presentations.Open("{file}") 
+                    $open_presentation = $ppt.Presentations.Open("{file}")
                     $open_presentation.SaveAs("{out_file}", [Microsoft.Office.Interop.PowerPoint.PpSaveAsFileType]::ppSaveAsPDF)
                     $open_presentation.Close()
                     """
