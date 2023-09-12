@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022 Patrick Stöckle.
+# SPDX-License-Identifier: Apache-2.0
+# syntax=docker/dockerfile:1.3
+
 FROM python:3.9-bullseye
 
 LABEL author="Patrick Stöckle <patrick.stoeckle@posteo.de>"
