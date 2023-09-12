@@ -78,7 +78,7 @@ $open_presentation.Close()
 """
             )
         _LOGGER.info(f"Opening PowerPoint ...")
-        p = Popen(["powershell.exe", '"' + str(script_path) + '"'], stdout=stdout)
+        p = Popen(["powershell.exe", "& '{script_path}'"], stdout=stdout)
         p.communicate()
         _LOGGER.info(f"Closing PowerPoint ...")
         remove(script_path)
