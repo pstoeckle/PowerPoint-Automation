@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2022 Patrick Stöckle.
+# SPDX-License-Identifier: Apache-2.0
 """
 Main module.
 """
@@ -12,6 +14,6 @@ except DistributionNotFound:
     __version__ = "unknown"
 finally:
     del get_distribution, DistributionNotFound
-__author__ = "Patrick Stoeckle"
-__copyright__ = "Patrick Stoeckle"
+__author__ = "Patrick Stöckle"
+__copyright__ = "Patrick Stöckle"
 __license__ = "mit"

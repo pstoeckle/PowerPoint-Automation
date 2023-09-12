@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022 Patrick Stöckle.
+# SPDX-License-Identifier: Apache-2.0
+
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 # Explicitly declare text files you want to always be normalized and converted
