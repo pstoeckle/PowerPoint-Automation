@@ -71,14 +71,14 @@ def _convert_file(
         with script_path.open("w") as f_write:
             f_write.write(
                 rf"""
-                    $ppt = New-Object -com powerpoint.application
-                    $open_presentation = $ppt.Presentations.Open("{file}")
-                    $open_presentation.SaveAs("{out_file}", [Microsoft.Office.Interop.PowerPoint.PpSaveAsFileType]::ppSaveAsPDF)
-                    $open_presentation.Close()
-                    """
+$ppt = New-Object -com powerpoint.application
+$open_presentation = $ppt.Presentations.Open("{file}")
+$open_presentation.SaveAs("{out_file}", [Microsoft.Office.Interop.PowerPoint.PpSaveAsFileType]::ppSaveAsPDF)
+$open_presentation.Close()
+"""
             )
         _LOGGER.info(f"Opening PowerPoint ...")
-        p = Popen(["powershell.exe", str(script_path)], stdout=stdout)
+        p = Popen(["powershell.exe", '"' + str(script_path) + '"'], stdout=stdout)
         p.communicate()
         _LOGGER.info(f"Closing PowerPoint ...")
         remove(script_path)
