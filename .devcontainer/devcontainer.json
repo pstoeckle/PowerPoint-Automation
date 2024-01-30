@@ -1,0 +1,53 @@
+{
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "DavidAnson.vscode-markdownlint",
+                "ms-python.black-formatter",
+                "ms-python.flake8",
+                "ms-python.isort",
+                "ms-python.mypy-type-checker",
+                "ms-python.pylint",
+                "ms-python.python",
+                "redhat.vscode-yaml",
+                "github.vscode-github-actions"
+            ],
+            "settings": {
+                "files.exclude": {
+                    "**/*.license": {
+                        "when": "$(basename)"
+                    },
+                    "**/.DS_Store": true,
+                    "**/.git": true,
+                    "**/.hg": true,
+                    "**/.svn": true,
+                    "**/CVS": true,
+                    "**/LICENSES": true,
+                    "**/Thumbs.db": true
+                },
+                "http.proxySupport": "off",
+                "isort.args": [
+                    "--profile",
+                    "black"
+                ],
+                "python.analysis.autoImportCompletions": true,
+                "python.analysis.typeCheckingMode": "basic",
+                "python.testing.pytestArgs": [
+                    "tests"
+                ],
+                "python.testing.pytestEnabled": true,
+                "python.testing.unittestEnabled": false
+            }
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+        "ghcr.io/devcontainers/features/git-lfs:1": {},
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.12.1"
+        }
+    },
+    "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+    "name": "Python, Poetry",
+    "postCreateCommand": "chmod +x .devcontainer/postCreateCommand.sh && .devcontainer/postCreateCommand.sh"
+}
