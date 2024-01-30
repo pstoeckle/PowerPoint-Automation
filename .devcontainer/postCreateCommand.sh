@@ -7,7 +7,7 @@
     echo 'source /etc/bash_completion.d/git-prompt' ;
 } | tee -a /home/vscode/.bashrc)
 
-# Add code.siemens.com to known hosts
+# Add github.com to known hosts
 ssh-keyscan github.com | tee -a /home/vscode/.ssh/known_hosts
 
 # Poetry install
