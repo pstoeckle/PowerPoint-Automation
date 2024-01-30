@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 [tool.poetry]
 name = "powerpoint-automation"
-version = "0.1.10"
+version = "0.1.10-1"
 description = "Scripts to automate some task in the context of PowerPoint."
 authors = ["Patrick Stöckle <patrick.stoeckle@posteo.de>"]
 maintainers = ["Patrick Stöckle <patrick.stoeckle@posteo.de>"]
